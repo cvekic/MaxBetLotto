@@ -7,43 +7,44 @@ import java.util.List;
  */
 public class ConnectionToDB {
     private java.sql.Connection con = null;
-    private PreparedStatement pst = null;
+    private PreparedStatement pStmt = null;
+    Statement stmt = null;
     private ResultSet rs = null;
     private String url = "jdbc:mysql://localhost/maxbetlotto?";
     private String user = "root";
     private String password = "";
+    final String DRIVER = "com.mysql.jdbc.Driver";
 
     public List<Integer> getAllTickets() throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException {
         List<Integer> ticketsId = new ArrayList<Integer>();
-        final String DRIVER = "com.mysql.jdbc.Driver";
-        Connection subject;
         Class.forName(DRIVER).newInstance();
-        subject = DriverManager.getConnection(url, user, password);
-        Statement stmt = subject.createStatement();
+        con = DriverManager.getConnection(url, user, password);
+        stmt = con.createStatement();
         rs = stmt.executeQuery("SELECT id FROM tickets");
         while(rs.next()) {
             Integer ticket = 0;
             ticket = (rs.getInt("id"));
             ticketsId.add(ticket);
         }
+        con.close();
         return ticketsId;
     }
     public void insertIntoDB(Integer id, String combination) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         con = DriverManager.getConnection(url, user, password);
-        String query = " insert into tickets values (?, ?)";
-        PreparedStatement preparedStmt = con.prepareStatement(query);
-        preparedStmt.setInt(1, id);
-        preparedStmt.setString (2, combination);
-        preparedStmt.execute();
+        String query = " INSERT INTO tickets VALUES (?, ?)";
+        pStmt = con.prepareStatement(query);
+        pStmt.setInt(1, id);
+        pStmt.setString(2, combination);
+        pStmt.execute();
         con.close();
     }
 
     public void deleteFromDB(Integer id) throws SQLException {
         con = DriverManager.getConnection(url, user, password);
-        String query = " delete from tickets where id=?";
-        PreparedStatement preparedStmt = con.prepareStatement(query);
-        preparedStmt.setInt(1, id);
-        preparedStmt.execute();
+        String query = " DELETE FROM tickets WHERE id=?";
+        pStmt = con.prepareStatement(query);
+        pStmt.setInt(1, id);
+        pStmt.execute();
         con.close();
     }
 

@@ -7,35 +7,35 @@ import java.util.*;
 public class LotteryServer extends java.rmi.server.UnicastRemoteObject
         implements MessageInterface
 {
-    public static final double MIN = 1;
-    public static final double MAX = 90;
-    Integer maxId = 0;
-    List<Integer> differentNumbers = new ArrayList<Integer>();
-    List<List<Integer>> mainList=new ArrayList<List<Integer>>();
-    LinkedHashMap<Integer, List<Integer>> chosenCollection = new LinkedHashMap<Integer, List<Integer>>();
-    Map<Boolean, List<Integer>> winerTickets = new TreeMap<Boolean, List<Integer>>();
-    int thisPort;
-    String thisAddress;
-    Registry registry;
-    ConnectionToDB connectionToDB = new ConnectionToDB();
-    // rmi registry for lookup the remote objects.
-    // This method is called from the remote client by the RMI.
-    // This is the implementation of the “MessageInterface”.
+    private static final double MIN = 1;
+    private static final double MAX = 90;
+    public static final int NUMBER_OF_TICKETS = 30;
+    public static final int NUMBER_OF_NUMBERS_ON_EACH_TICKET = 15;
+    private Integer maxId = 0;
+    private List<Integer> differentNumbers = new ArrayList<Integer>();
+    private List<List<Integer>> mainList=new ArrayList<List<Integer>>();
+    private LinkedHashMap<Integer, List<Integer>> chosenCollection = new LinkedHashMap<Integer, List<Integer>>();
+    private Map<Boolean, List<Integer>> winerTickets = new TreeMap<Boolean, List<Integer>>();
+    public int thisPort;
+    public String thisAddress;
+    public Registry registry;
+    private ConnectionToDB connectionToDB = new ConnectionToDB();
+
+    /* Generisanje liste od 30 tiketa i prosledjivanje*/
     @Override
     public List<List<Integer>> generateTickets() throws RemoteException
     {
         mainList.clear();
-        for(int m=0; m < 30; m++){
-            mainList.add(generateNos());
+        for(int m=0; m < NUMBER_OF_TICKETS; m++){
+            mainList.add(generateNoInEachTicket());
         }
-        System.out.println("Process Finished!");
         return mainList;
     }
-    /* Generate and add numbers b/w 1-90 in vector */
-    private List<Integer> generateNos(){
+    /* Generisanje i dodavanje 15 brojeva u tiket i prosledjivanje tiketa  */
+    private List<Integer> generateNoInEachTicket(){
         int randomNumber = 0;
         List<Integer> oneTicket=new ArrayList<Integer>();
-        while(oneTicket.size() != 15) {
+        while(oneTicket.size() != NUMBER_OF_NUMBERS_ON_EACH_TICKET) {
             randomNumber = generateNumbersInRangeFrom1To90();
             if(!oneTicket.contains(randomNumber)) {
                 oneTicket.add(randomNumber);
@@ -43,7 +43,7 @@ public class LotteryServer extends java.rmi.server.UnicastRemoteObject
         }
         return oneTicket;
     }
-
+    /*Generisanje izvucenog broja*/
     @Override
     public Integer generateLottoCombination() throws RemoteException {
         int winningNumber = generateNumbersInRangeFrom1To90();
@@ -53,19 +53,16 @@ public class LotteryServer extends java.rmi.server.UnicastRemoteObject
         differentNumbers.add(winningNumber);
         return winningNumber;
     }
-
+    /*Metoda koja se poziva da bi se pripremile odredjene promjenjive za novo kolo*/
     @Override
     public void clearList() throws RemoteException {
         winerTickets.clear();
         maxId = 0;
     }
-
+    /*Dohvatanje id zadnjeg tiketa u bazi*/
     @Override
     public Integer returnMaxid() throws RemoteException {
-
         try {
-//            List<Integer> proba = connectionToDB.getAllTickets();
-//            System.out.println(proba.toString());
             for (Integer i : connectionToDB.getAllTickets()) {
                 if (i > maxId) {
                     maxId = i;
@@ -82,19 +79,19 @@ public class LotteryServer extends java.rmi.server.UnicastRemoteObject
         }
         return maxId;
     }
-
+    /*Metoda za unos tiketa u bazu podataka*/
     @Override
     public void insertIntoDB(Integer id, String combination) throws RemoteException {
         try {
             connectionToDB.insertIntoDB(id, combination);
-            List<Integer> tepmList = new ArrayList<Integer>();
+            List<Integer> listForHoldingFormattedInteger = new ArrayList<Integer>();
             combination = combination.replace(" ", "");
-            List<String> tempArray = Arrays.asList(combination.split(","));
-            for(String s : tempArray) {
+            List<String> tempArrayForFormattingList = Arrays.asList(combination.split(","));
+            for(String s : tempArrayForFormattingList) {
                 Integer tempInt = Integer.parseInt(s);
-                tepmList.add(tempInt);
+                listForHoldingFormattedInteger.add(tempInt);
             }
-            chosenCollection.put(id, tepmList);
+            chosenCollection.put(id, listForHoldingFormattedInteger);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (SQLException e) {
@@ -105,7 +102,7 @@ public class LotteryServer extends java.rmi.server.UnicastRemoteObject
             e.printStackTrace();
         }
     }
-
+    /*Metoda za brisanje tiketa iz baze podataka*/
     @Override
     public void deleteFromDB(Integer id) throws RemoteException {
         try {
@@ -115,15 +112,13 @@ public class LotteryServer extends java.rmi.server.UnicastRemoteObject
             e.printStackTrace();
         }
     }
-
+    /*Provjeravanje da li su izvuceni svi brojevi na bilo kom listicu koji je u igri*/
     @Override
     public Map<Boolean, List<Integer>> checkForWinner() throws RemoteException {
         boolean flag = false;
-
-        if (differentNumbers.size() >= 15) {
+        if (differentNumbers.size() >= NUMBER_OF_NUMBERS_ON_EACH_TICKET) {
             for (List<Integer> list : chosenCollection.values()) {
                 if(differentNumbers.containsAll(list)) {
-                   System.out.println(list);
                    flag = true;
                    winerTickets.put(flag, list);
                 }
@@ -134,11 +129,12 @@ public class LotteryServer extends java.rmi.server.UnicastRemoteObject
         }
         return winerTickets;
     }
-
+    /*Generisanje random broja u intervalu [1,90]*/
     private int generateNumbersInRangeFrom1To90() {
         return (int) (MIN + (int)(Math.random() * ((MAX - MIN) + 1)));
     }
 
+    /*RMI konfiguracija i pokretanje RMI Servera*/
     public LotteryServer() throws RemoteException
     {
         try{

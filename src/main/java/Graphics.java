@@ -1,22 +1,26 @@
 import javax.swing.*;
-import javax.swing.Timer;
 import javax.swing.text.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
  * Created by Mladjan on 29.3.2014.
  */
-public class Graphics extends javax.swing.JFrame implements ItemListener {
+public class Graphics extends javax.swing.JFrame implements ItemListener, ActionListener{
 
     public JPanel panel1;
     public JButton pokreniIgruButton;
     private JTextPane textPane1;
     private JTextPane textPane3;
     private JPanel p2;
+    private JTextPane textPane2;
 
     Boolean flagForSelectedTicket = false;
     protected static final int INACTIVATE_DELAY_11_SECONDS = 11000;
@@ -25,48 +29,43 @@ public class Graphics extends javax.swing.JFrame implements ItemListener {
     LotteryClient lotteryClient = new LotteryClient();
     MessageInterface rmiServer;
     LinkedHashMap<Integer, List<Integer>> collectionOfTickets = new LinkedHashMap<Integer, List<Integer>>();
-    List<JCheckBox> check = new ArrayList<JCheckBox>();
+    List<JCheckBox> listCheckBoxes = new ArrayList<JCheckBox>();
+    List<JButton> listButtons = new ArrayList<JButton>();
 
     public static void likeMain() {
-        JFrame frame = new JFrame("Graphics");
+        JFrame frame = new JFrame("Max Bet Lotto");
         frame.setContentPane(new Graphics().panel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
     }
     public Graphics() {
-        StyledDocument doc = textPane1.getStyledDocument();
-        SimpleAttributeSet center = new SimpleAttributeSet();
-        MutableAttributeSet attrs = textPane1.getInputAttributes();
-        int size = StyleConstants.getFontSize(attrs);
-        StyleConstants.setFontSize(attrs, size * 3);
-        StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
-        doc.setParagraphAttributes(0, doc.getLength(), center, false);
-
+        setStyleToTextPane1();
+        setStyleToTextPane2();
+        setStyleToTextPane3();
         pokreniIgruButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 pokreniIgruButton.setEnabled(false);
                 textPane3.setText("");
-                rmiServer = lotteryClient.InicializeRMI();
+                textPane2.setText("");
+                rmiServer = lotteryClient.initializeRMI();
                 try {
                     collectionOfTickets = lotteryClient.generateTickets(rmiServer);
                     p2.removeAll();
                     p2.updateUI();
-                    p2.setLayout( new GridLayout( collectionOfTickets.size(),2) );
+                    p2.setLayout(new GridLayout(collectionOfTickets.size(), 2));
                     for (Integer key : collectionOfTickets.keySet()) {
                         updateP2(collectionOfTickets.size(), key);
-                        String name = key.toString();
-                        System.out.println(key);
-
                     }
                 } catch (RemoteException e1) {
                     e1.printStackTrace();
                 }
+
                 final Timer timerForWriteEverySecondOnScreen = new Timer(INACTIVATE_DELAY_ONE_SECOND, new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                            textPane1.setText("Igra pocinje za: " + "\n" + Integer.toString(secondsToStartGame) + "\n" + "sekundi");
-                            secondsToStartGame--;
+                        textPane1.setText("Igra pocinje za: " + "\n" + Integer.toString(secondsToStartGame) + "\n" + "sekundi");
+                        secondsToStartGame--;
                     }
                 });
                 // don't allow repeats
@@ -77,35 +76,33 @@ public class Graphics extends javax.swing.JFrame implements ItemListener {
 
                 final Timer timer1 = new Timer(INACTIVATE_DELAY_ONE_SECOND, new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                            if(!lotteryClient.FLAG){
-                                Integer drawnNumber = null;
-                                try {
-                                    drawnNumber = lotteryClient.drawingNumbers(rmiServer);
-                                } catch (RemoteException e1) {
-                                    e1.printStackTrace();
-                                } catch (InterruptedException e1) {
-                                    e1.printStackTrace();
-                                }
-                                textPane1.setText("Izvuceni broj je: " + "\n" + String.valueOf(drawnNumber));
+                        if (!lotteryClient.FLAG) {
+                            Integer drawnNumber = null;
+                            try {
+                                drawnNumber = lotteryClient.drawingNumbers(rmiServer);
+                            } catch (RemoteException e1) {
+                                e1.printStackTrace();
+                            } catch (InterruptedException e1) {
+                                e1.printStackTrace();
                             }
-                        else {
-                                lotteryClient.FLAG = false;
-                                ((Timer)e.getSource()).stop();
-                                for(List<Integer> list : lotteryClient.winnerTickets){
-                                    appendPanel3(list.toString());
-                                }
-                                textPane1.setText("WINNER");
-                                flagForSelectedTicket = false;
-                                check.clear();
-
-                                lotteryClient.winnerTickets.clear();
-                                pokreniIgruButton.setEnabled(true);
-                                try {
-                                    rmiServer.clearList();
-                                } catch (RemoteException e1) {
-                                    e1.printStackTrace();
-                                }
+                            textPane1.setText("Izvuceni broj je: " + "\n" + String.valueOf(drawnNumber));
+                            appendTextToTextPane2(drawnNumber);
+                        } else {
+                            lotteryClient.FLAG = false;
+                            ((Timer) e.getSource()).stop();
+                            appendTextToTextPane3();
+                            textPane1.setText("WINNER");
+                            flagForSelectedTicket = false;
+                            listCheckBoxes.clear();
+                            listButtons.clear();
+                            lotteryClient.winnerTickets.clear();
+                            pokreniIgruButton.setEnabled(true);
+                            try {
+                                rmiServer.clearList();
+                            } catch (RemoteException e1) {
+                                e1.printStackTrace();
                             }
+                        }
                     }
 
                 });
@@ -113,24 +110,29 @@ public class Graphics extends javax.swing.JFrame implements ItemListener {
                 timer1.setRepeats(true);
                 // tell timer to start
 
-
                 Timer timerForGenerateDelayFor10Seconds = new Timer(INACTIVATE_DELAY_11_SECONDS, new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         timerForWriteEverySecondOnScreen.stop();
                         secondsToStartGame = 10;
-
                         textPane1.setText("");
-                        for(JCheckBox box : check) {
+                        for (JCheckBox box : listCheckBoxes) {
+                            if (box.isSelected()) {
+                                flagForSelectedTicket = true;
+                            }
                             box.setEnabled(false);
+                        }
+                        for (JButton button : listButtons) {
+                            button.setEnabled(false);
                         }
 
                         if (flagForSelectedTicket) {
-                            textPane3.setText("Ocekujemo dobitni listic!");
+                            textPane3.setText("Cekanje na dobitni listic!");
+                            textPane2.setText("Izvuceni brojevi su:\n");
                             timer1.start();
-                        }
-                        else{
+                        } else {
                             textPane3.setText("Niste izabrali ni jedan listic!");
-                            check.clear();
+                            listCheckBoxes.clear();
+                            listButtons.clear();
                             lotteryClient.winnerTickets.clear();
                             pokreniIgruButton.setEnabled(true);
                             try {
@@ -150,30 +152,73 @@ public class Graphics extends javax.swing.JFrame implements ItemListener {
         });
     }
 
+    private void setStyleToTextPane3() {
+        StyledDocument doc3 = textPane3.getStyledDocument();
+        SimpleAttributeSet center = new SimpleAttributeSet();
+        MutableAttributeSet attrs3 = textPane3.getInputAttributes();
+        int size3 = StyleConstants.getFontSize(attrs3);
+        StyleConstants.setFontSize(attrs3, size3 * 3);
+        StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
+        doc3.setParagraphAttributes(0, doc3.getLength(), center, false);
+    }
+
+    private void setStyleToTextPane2() {
+        StyledDocument doc2 = textPane2.getStyledDocument();
+        SimpleAttributeSet center = new SimpleAttributeSet();
+        MutableAttributeSet attrs2 = textPane2.getInputAttributes();
+        int size2 = StyleConstants.getFontSize(attrs2);
+        StyleConstants.setFontSize(attrs2, size2 * 2);
+        StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
+        doc2.setParagraphAttributes(0, doc2.getLength(), center, false);
+    }
+
+    private void setStyleToTextPane1() {
+        StyledDocument doc = textPane1.getStyledDocument();
+        SimpleAttributeSet center = new SimpleAttributeSet();
+        MutableAttributeSet attrs = textPane1.getInputAttributes();
+        int size = StyleConstants.getFontSize(attrs);
+        StyleConstants.setFontSize(attrs, size * 5);
+        StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
+        doc.setParagraphAttributes(0, doc.getLength(), center, false);
+    }
+
     private void updateP2( int noOfCheckBoxes, int key )
     {
         JCheckBox box;
-        // JFrame frame = new JFrame();
-        // frame.setSize(new Dimension(50, 50));
-        box = new JCheckBox("This is " + key );
-        //JCheckBox button = new JCheckBox("This is 1");
-        final JPanel buttonWrapper = new JPanel();
-        //buttonWrapper.add(new JLabel("Pregled tiketa"));
-        // buttonWrapper.add(box);
-        // buttonWrapper.setBorder(BorderFactory.createRaisedBevelBorder());
+        box = new JCheckBox();
+        Color color=new Color(30, 99, 191);
+        box.setBackground(color);
+        JButton buttonLikeLabel = new JButton("        ID " + key);
+        buttonLikeLabel.setBorderPainted(false);
+        buttonLikeLabel.setContentAreaFilled(false);
+        buttonLikeLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        buttonLikeLabel.setForeground(Color.white);
         box.addItemListener(this);
-        // p2.add(buttonWrapper);
-        p2.add(box);
-        check.add(box);
+        buttonLikeLabel.addActionListener(this);
+        buttonLikeLabel.add(box);
+        p2.add(buttonLikeLabel);
+        listButtons.add(buttonLikeLabel);
+        listCheckBoxes.add(box);
     }
-
-    public void appendPanel3(String s) {
+    private void appendTextToTextPane2(Integer drawnNumber) {
         try {
-            Document doc = textPane3.getDocument();
-            doc.insertString(doc.getLength(), s + "\n", null);
+            Document doc = textPane2.getDocument();
+            String formatedString = Integer.toString(drawnNumber);
+            doc.insertString(doc.getLength(), formatedString + ", ", null);
         } catch(BadLocationException exc) {
             exc.printStackTrace();
         }
+    }
+
+    public void appendTextToTextPane3() {
+        String name = "Dobitna kombinacija je:";
+        String formatedString;
+        String finalString = "";
+        for (List<Integer> list : lotteryClient.winnerTickets) {
+            formatedString = list.toString().replace("[", "").replace("]", "");
+            finalString += name + "\n" + formatedString + "\n";
+        }
+        textPane3.setText(finalString);
     }
     public static void main(String[] args) {
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -187,39 +232,36 @@ public class Graphics extends javax.swing.JFrame implements ItemListener {
     }
     @Override
     public void itemStateChanged(ItemEvent e) {
-        Object source = e.getItemSelectable();
-        int index = 0;
-        for (JCheckBox box : check) {
-            index++;
-            if (source == box)
+        Object sourceBox = e.getItemSelectable();
+        int indexBox = 0;
+        for (JCheckBox box : listCheckBoxes) {
+            indexBox++;
+            if (sourceBox == box)
             {
                 break;
+            }
+        }
+        //Apply the change to the string.
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            if (indexBox > 0 && indexBox < 31) {
+                insertToDb(indexBox);
+                showInTextPane3(indexBox);
             }
         }
         //Now that we know which button was pushed, find out
         //whether it was selected or deselected.
         if (e.getStateChange() == ItemEvent.DESELECTED) {
-            flagForSelectedTicket = false;
-            if (index > 0 && index < 31) {
-                deleteFromDB(index);
-                textPane3.setText("");
+            if (indexBox > 0 && indexBox < 31) {
+                deleteFromDB(indexBox);
+                textPane3.setText("Tiket je izbrisan iz baze!");
             }
         }
-        //Apply the change to the string.
-        if (e.getStateChange() == ItemEvent.SELECTED) {
-            flagForSelectedTicket = true;
-            if (index > 0 && index < 31) {
-                showInTextPane3(index);
-                insertToDb(index);
-            }
-        }
+
     }
     private void insertToDb(int index) {
         List<Integer> list = (new ArrayList<List<Integer>>(collectionOfTickets.values())).get(index-1);
         Integer value = (new ArrayList<Integer>(collectionOfTickets.keySet())).get(index-1);
-        String formatedString = list.toString()
-                .replace("[", "")   //remove the right bracket
-                .replace("]", "");
+        String formatedString = list.toString().replace("[", "").replace("]", "");
         try {
             rmiServer.insertIntoDB(value, formatedString);
         } catch (RemoteException e) {
@@ -228,7 +270,6 @@ public class Graphics extends javax.swing.JFrame implements ItemListener {
     }
     private void deleteFromDB(int index) {
         Integer value = (new ArrayList<Integer>(collectionOfTickets.keySet())).get(index-1);
-        System.out.println("Radi nesto " + Integer.toString(value));
         try {
             rmiServer.deleteFromDB(value);
         } catch (RemoteException e) {
@@ -238,6 +279,19 @@ public class Graphics extends javax.swing.JFrame implements ItemListener {
     }
     private void showInTextPane3(int i) {
         List<Integer> list = (new ArrayList<List<Integer>>(collectionOfTickets.values())).get(i-1);
-        textPane3.setText(list.toString());
+        Integer id = (new ArrayList<Integer>(collectionOfTickets.keySet())).get(i-1);
+        String formatedString = "Kombinacija za tiket ID #" + Integer.toString(id) + "\n\n" + list.toString().replace("[", "").replace("]", "");
+        textPane3.setText(formatedString);
+    }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        Object source = e.getSource();
+        int indexButton = 0;
+        for (JButton button : listButtons) {
+            indexButton++;
+            if(source == button) {
+                showInTextPane3(indexButton);
+            }
+        }
     }
 }
