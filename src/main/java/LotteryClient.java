@@ -27,7 +27,7 @@ public class LotteryClient
         }
         return rmiServer;
     }
-//TODO dovde sam stigao
+    /*Metoda koja komunicira sa serverom za dohvatanje izvucenog broja*/
     public Integer drawingNumbers(MessageInterface rmiServer) throws RemoteException, InterruptedException {
             int winnerNumber = rmiServer.generateLottoCombination();
             if (rmiServer.checkForWinner().get(true) != null){
@@ -36,10 +36,11 @@ public class LotteryClient
             }
         return winnerNumber;
     }
+    /*Metoda koja komunicira sa serverom za dohvatanje generisanih 30 tiketa*/
     public LinkedHashMap<Integer, List<Integer>> generateTickets(MessageInterface rmiServer) throws RemoteException {
         List<List<Integer>> noArr = rmiServer.generateTickets();
         LinkedHashMap<Integer, List<Integer>> collectionOfTickets = new LinkedHashMap<Integer, List<Integer>>();
-        int idOfTicket = rmiServer.returnMaxid() + 1;
+        int idOfTicket = rmiServer.returnMaxId() + 1;
         for (List<Integer> list : noArr) {
             collectionOfTickets.put(idOfTicket, list);
             idOfTicket++;

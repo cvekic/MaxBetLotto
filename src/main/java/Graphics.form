@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="Graphics">
-  <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="mainPanel" default-binding="true" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
       <xy x="20" y="20" width="859" height="859"/>
@@ -8,7 +8,7 @@
     <properties/>
     <border type="none"/>
     <children>
-      <grid id="d7423" layout-manager="GridLayoutManager" row-count="5" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="d7423" layout-manager="GridLayoutManager" row-count="7" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
@@ -25,15 +25,18 @@
         </properties>
         <border type="none"/>
         <children>
-          <component id="45d26" class="javax.swing.JButton" binding="pokreniIgruButton" default-binding="true">
+          <component id="45d26" class="javax.swing.JButton" binding="startTheGameButton" default-binding="true">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
+              <background color="-16738048"/>
+              <foreground color="-1"/>
+              <hideActionText value="false"/>
               <text value="Pokreni Igru"/>
             </properties>
           </component>
-          <grid id="5a8db" binding="p2" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+          <grid id="5a8db" binding="panelForCBForTickets" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
               <grid row="1" column="0" row-span="3" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
@@ -48,7 +51,7 @@
             <border type="none"/>
             <children/>
           </grid>
-          <component id="d6f67" class="javax.swing.JTextPane" binding="textPane3" default-binding="true">
+          <component id="d6f67" class="javax.swing.JTextPane" binding="textPaneForShowingDetailsOfTicket" default-binding="true">
             <constraints>
               <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="0" indent="0" use-parent-layout="false">
                 <minimum-size width="450" height="300"/>
@@ -62,7 +65,7 @@
               <foreground color="-1"/>
             </properties>
           </component>
-          <component id="47fce" class="javax.swing.JTextPane" binding="textPane2" default-binding="true">
+          <component id="47fce" class="javax.swing.JTextPane" binding="textPaneForDrawingHistory" default-binding="true">
             <constraints>
               <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
                 <minimum-size width="600" height="-1"/>
@@ -75,27 +78,39 @@
               <editable value="false"/>
               <enabled value="true"/>
               <foreground color="-1"/>
+              <text value=""/>
             </properties>
           </component>
           <vspacer id="de026">
             <constraints>
-              <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+              <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
             </constraints>
           </vspacer>
-          <component id="83fb6" class="javax.swing.JTextPane" binding="textPane1" default-binding="true">
+          <component id="83fb6" class="javax.swing.JTextPane" binding="textPaneForShowingGeneratedNumber" default-binding="true">
             <constraints>
               <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="0" indent="0" use-parent-layout="false">
-                <minimum-size width="450" height="300"/>
-                <preferred-size width="450" height="300"/>
-                <maximum-size width="450" height="300"/>
+                <minimum-size width="450" height="305"/>
+                <preferred-size width="450" height="305"/>
+                <maximum-size width="450" height="305"/>
               </grid>
             </constraints>
             <properties>
               <background color="-10263785"/>
               <editable value="false"/>
               <foreground color="-1"/>
+              <text value=""/>
             </properties>
           </component>
+          <vspacer id="d147b">
+            <constraints>
+              <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+            </constraints>
+          </vspacer>
+          <vspacer id="de047">
+            <constraints>
+              <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+            </constraints>
+          </vspacer>
         </children>
       </grid>
     </children>

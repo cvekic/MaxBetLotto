@@ -9,7 +9,7 @@ public interface MessageInterface extends Remote
     Integer generateLottoCombination() throws RemoteException;
     Map<Boolean, List<Integer>> checkForWinner() throws RemoteException;
     void clearList() throws RemoteException;
-    Integer returnMaxid() throws RemoteException;
+    Integer returnMaxId() throws RemoteException;
     void insertIntoDB(Integer id, String combination) throws RemoteException;
     void deleteFromDB(Integer id) throws RemoteException;
 }

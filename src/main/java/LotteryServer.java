@@ -61,7 +61,7 @@ public class LotteryServer extends java.rmi.server.UnicastRemoteObject
     }
     /*Dohvatanje id zadnjeg tiketa u bazi*/
     @Override
-    public Integer returnMaxid() throws RemoteException {
+    public Integer returnMaxId() throws RemoteException {
         try {
             for (Integer i : connectionToDB.getAllTickets()) {
                 if (i > maxId) {

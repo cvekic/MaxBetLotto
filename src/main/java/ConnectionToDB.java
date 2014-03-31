@@ -9,7 +9,7 @@ public class ConnectionToDB {
     private java.sql.Connection con = null;
     private PreparedStatement pStmt = null;
     Statement stmt = null;
-    private ResultSet rs = null;
+    public ResultSet rs = null;
     private String url = "jdbc:mysql://localhost/maxbetlotto?";
     private String user = "root";
     private String password = "";
@@ -38,7 +38,6 @@ public class ConnectionToDB {
         pStmt.execute();
         con.close();
     }
-
     public void deleteFromDB(Integer id) throws SQLException {
         con = DriverManager.getConnection(url, user, password);
         String query = " DELETE FROM tickets WHERE id=?";
@@ -47,6 +46,4 @@ public class ConnectionToDB {
         pStmt.execute();
         con.close();
     }
-
-
 }
